@@ -35,7 +35,7 @@ test("AUTH V2 refresh persists its token pair and caches the access token", asyn
       calls.push({ url: new URL(String(input)), init });
       return Response.json({
         access_token: "new-access-token",
-        refresh_token: "rotated-refresh-token",
+        refresh_token: "bootstrap-refresh-token",
         expires_in: 604800,
         token_type: "Bearer",
       });
@@ -52,7 +52,7 @@ test("AUTH V2 refresh persists its token pair and caches the access token", asyn
   assert.equal(body.get("client_secret"), "simkl-client-secret");
   assert.deepEqual(await storage.get("simkl-oauth"), {
     accessToken: "new-access-token",
-    refreshToken: "rotated-refresh-token",
+    refreshToken: "bootstrap-refresh-token",
     expiresAt: now + 604800000,
     refreshExpiresAt: now + 180 * 86400000,
   });
@@ -116,7 +116,7 @@ test("Worker reads only the Simkl refresh expiry from the Durable Object", async
   assert.equal(await getSimklRefreshExpiry(envWithStore), now + 20);
 });
 
-test("AUTH V2 refresh uses its stored refresh token after bootstrap", async () => {
+test("AUTH V2 refresh prefers a reconfigured Worker secret over stale stored state", async () => {
   const storage = new MemoryStorage();
   storage.values.set("simkl-oauth", {
     accessToken: "expired-access-token",
@@ -137,7 +137,52 @@ test("AUTH V2 refresh uses its stored refresh token after bootstrap", async () =
     },
     now: () => now,
   });
-  assert.equal(sentRefreshToken, "latest-refresh-token");
+  assert.equal(sentRefreshToken, "bootstrap-refresh-token");
+});
+
+test("changing the Worker refresh secret invalidates a cached access token", async () => {
+  const storage = new MemoryStorage();
+  storage.values.set("simkl-oauth", {
+    accessToken: "still-valid-but-obsolete",
+    refreshToken: "previous-worker-refresh-token",
+    expiresAt: now + 604800000,
+  });
+  let called = 0;
+  const refreshed = await refreshSimklAccessToken(env, storage, {
+    fetch: async (_input, init) => {
+      called += 1;
+      const body = new URLSearchParams(String(init?.body));
+      assert.equal(body.get("refresh_token"), env.SIMKL_REFRESH_TOKEN);
+      return Response.json({
+        access_token: "access-for-new-grant",
+        refresh_token: env.SIMKL_REFRESH_TOKEN,
+        expires_in: 604800,
+      });
+    },
+    now: () => now,
+  });
+  assert.equal(refreshed, "access-for-new-grant");
+  assert.equal(called, 1);
+  assert.equal(
+    (await storage.get<{ refreshToken: string }>("simkl-oauth"))?.refreshToken,
+    env.SIMKL_REFRESH_TOKEN,
+  );
+});
+
+test("unchanged Worker refresh secret reuses the stored access token", async () => {
+  const storage = new MemoryStorage();
+  storage.values.set("simkl-oauth", {
+    accessToken: "valid-cached-access",
+    refreshToken: env.SIMKL_REFRESH_TOKEN,
+    expiresAt: now + 3600000,
+  });
+  const token = await refreshSimklAccessToken(env, storage, {
+    fetch: async () => {
+      throw Error("A valid cached token should not refresh");
+    },
+    now: () => now,
+  });
+  assert.equal(token, "valid-cached-access");
 });
 
 test("unexpired access token is reused until it is forced to refresh", async () => {
