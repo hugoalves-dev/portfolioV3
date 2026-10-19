@@ -60,17 +60,20 @@ export async function refreshSimklAccessToken(
   options: { force?: boolean } = {},
 ): Promise<string> {
   const current = storedTokens(await storage.get<unknown>(TOKEN_STATE_KEY));
+  const clientId = env.SIMKL_CLIENT_ID;
+  // AUTH V2 refresh tokens do not rotate. A new Worker secret must take
+  // precedence over any obsolete grant cached in the Durable Object.
+  const refreshToken = env.SIMKL_REFRESH_TOKEN ?? current?.refreshToken;
+  if (!clientId || !refreshToken)
+    throw new SimklTokenError("unconfigured", 503);
+
   if (
     !options.force &&
     current &&
+    current.refreshToken === refreshToken &&
     current.expiresAt > deps.now() + TOKEN_EXPIRY_SKEW_MS
   )
     return current.accessToken;
-
-  const clientId = env.SIMKL_CLIENT_ID;
-  const refreshToken = current?.refreshToken ?? env.SIMKL_REFRESH_TOKEN;
-  if (!clientId || !refreshToken)
-    throw new SimklTokenError("unconfigured", 503);
 
   const body = new URLSearchParams({
     client_id: clientId,
