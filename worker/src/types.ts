@@ -4,7 +4,6 @@ import type {
   ProviderState,
 } from "../../lib/live-activity.ts";
 export interface Env {
-  WAKATIME_API_KEY?: string;
   WAKATIME_CLIENT_ID?: string;
   WAKATIME_CLIENT_SECRET?: string;
   WAKATIME_REFRESH_TOKEN?: string;
