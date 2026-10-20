@@ -1,11 +1,11 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import type { Env } from "../worker/src/types.ts";
 import {
   getWakaTimeAccessToken,
   refreshWakaTimeAccessToken,
   WakaTimeTokenStore,
 } from "../worker/src/wakatime-oauth.ts";
-import type { Env } from "../worker/src/types.ts";
 
 class MemoryStorage {
   values = new Map<string, unknown>();
@@ -51,14 +51,11 @@ test("refreshes and persists the initial WakaTime token pair", async () => {
     calls[0]?.headers && new Headers(calls[0].headers).get("Content-Type"),
     "application/x-www-form-urlencoded",
   );
-  assert.deepEqual(
-    await storage.get("wakatime-oauth"),
-    {
-      accessToken: "access-1",
-      refreshToken: "refresh-1",
-      expiresAt: now + 3_600_000,
-    },
-  );
+  assert.deepEqual(await storage.get("wakatime-oauth"), {
+    accessToken: "access-1",
+    refreshToken: "refresh-1",
+    expiresAt: now + 3_600_000,
+  });
 });
 
 test("reuses an access token until its expiry safety window", async () => {
@@ -165,6 +162,27 @@ test("does not overwrite the stored token pair after malformed refresh", async (
   assert.deepEqual(await storage.get("wakatime-oauth"), current);
 });
 
+test("does not overwrite stored credentials when refresh requests fail", async () => {
+  const storage = new MemoryStorage();
+  const current = {
+    accessToken: "expired-access",
+    refreshToken: "stored-refresh",
+    expiresAt: now - 1,
+  };
+  storage.values.set("wakatime-oauth", current);
+  await assert.rejects(
+    refreshWakaTimeAccessToken(
+      { ...env, WAKATIME_REFRESH_TOKEN: undefined },
+      storage,
+      deps(async () => {
+        throw new Error("private-refresh-token network text");
+      }),
+      { force: true },
+    ),
+  );
+  assert.deepEqual(await storage.get("wakatime-oauth"), current);
+});
+
 test("serializes concurrent refreshes and keeps refresh tokens inside storage", async () => {
   const storage = new MemoryStorage();
   let lock: Promise<void> = Promise.resolve();
@@ -177,19 +195,6 @@ test("serializes concurrent refreshes and keeps refresh tokens inside storage", 
         () => undefined,
       );
       return current;
-    },
-  };
-  const workerEnv: Env = {
-    ...env,
-    WAKATIME_TOKEN_STORE: {
-      idFromName: (name) => name,
-      get: () => ({
-        fetch: (input, init) => new WakaTimeTokenStore(state, env).fetch(
-          input instanceof Request
-            ? input
-            : new Request(input, init),
-        ),
-      }),
     },
   };
   const requests: string[] = [];
@@ -210,15 +215,28 @@ test("serializes concurrent refreshes and keeps refresh tokens inside storage", 
   try {
     const store = new WakaTimeTokenStore(state, env);
     const [first, second] = await Promise.all([
-      store.fetch(new Request("https://wakatime-token-store/access-token", { method: "POST", body: "{}" })),
-      store.fetch(new Request("https://wakatime-token-store/access-token", { method: "POST", body: "{}" })),
+      store.fetch(
+        new Request("https://wakatime-token-store/access-token", {
+          method: "POST",
+          body: "{}",
+        }),
+      ),
+      store.fetch(
+        new Request("https://wakatime-token-store/access-token", {
+          method: "POST",
+          body: "{}",
+        }),
+      ),
     ]);
     assert.deepEqual(requests, ["initial-refresh"]);
     const firstPayload = await first.json();
     const secondPayload = await second.json();
     assert.deepEqual(firstPayload, { access_token: "access-1" });
     assert.deepEqual(secondPayload, { access_token: "access-1" });
-    assert.equal(JSON.stringify([firstPayload, secondPayload]).includes("refresh-1"), false);
+    assert.equal(
+      JSON.stringify([firstPayload, secondPayload]).includes("refresh-1"),
+      false,
+    );
   } finally {
     globalThis.fetch = originalFetch;
     Date.now = originalNow;
@@ -227,8 +245,13 @@ test("serializes concurrent refreshes and keeps refresh tokens inside storage", 
 
 test("returns unconfigured when WakaTime OAuth credentials are absent", async () => {
   await assert.rejects(
-    refreshWakaTimeAccessToken({}, new MemoryStorage(), deps(async () => Response.json({}))),
-    (error: unknown) => error instanceof Error && error.message === "unconfigured",
+    refreshWakaTimeAccessToken(
+      {},
+      new MemoryStorage(),
+      deps(async () => Response.json({})),
+    ),
+    (error: unknown) =>
+      error instanceof Error && error.message === "unconfigured",
   );
 });
 
@@ -239,7 +262,11 @@ test("returns an access token through the Worker Durable Object binding", async 
       idFromName: (name) => name,
       get: () => ({
         fetch: async (request) => {
-          assert.equal(new URL(request instanceof Request ? request.url : String(request)).pathname, "/access-token");
+          assert.equal(
+            new URL(request instanceof Request ? request.url : String(request))
+              .pathname,
+            "/access-token",
+          );
           return Response.json({ access_token: "access-from-store" });
         },
       }),

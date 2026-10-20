@@ -159,6 +159,35 @@ test("WakaTime, Simkl, and Steam classify unauthorized responses as invalid", as
   }
 });
 
+test("WakaTime invalid refresh grants are invalid without exposing token errors", async () => {
+  const env: Env = {
+    ...wakaCredentials,
+    WAKATIME_TOKEN_STORE: {
+      idFromName: (name) => name,
+      get: () => ({
+        fetch: async () =>
+          Response.json(
+            {
+              error: "invalid_grant",
+              error_description: "private-access-token private-refresh-token",
+            },
+            { status: 400 },
+          ),
+      }),
+    },
+  };
+  const result = await probeActivityCredentials(
+    env,
+    dependencies(() => ({})),
+  );
+  assert.deepEqual(result.coding, {
+    state: "invalid",
+    reason: "invalid_token",
+  });
+  assert.ok(!JSON.stringify(result).includes("private-access-token"));
+  assert.ok(!JSON.stringify(result).includes("private-refresh-token"));
+});
+
 test("Spotify invalid_grant, invalid_client, and 401 are invalid credentials", async () => {
   for (const [response, reason] of [
     [

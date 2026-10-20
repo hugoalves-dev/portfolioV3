@@ -4,7 +4,7 @@
 
 Migrate the portfolio activity Worker’s WakaTime API reads from API-key Basic authentication to OAuth 2.0 bearer authentication, following issue #3 in `vitorhugo-dotnet/wakatime-mcp-cloudflare-worker`. The portfolio already integrates WakaTime for live coding activity; this change updates its authentication and credential lifecycle.
 
-This is a single-user integration. The public live-activity response, its endpoint authentication, and the other activity providers remain unchanged. WakaTime OAuth credentials must stay server-side and must not appear in URLs, client responses, or logs.
+This is a single-user integration. The public live-activity response, its endpoint authentication, and the other activity providers remain unchanged. The OAuth client secret and access/refresh tokens must stay server-side and must not appear in URLs, client responses, or logs. OAuth's public client ID appears in the authorization URL, and its one-time authorization code appears in the provider callback URL; the setup script validates and exchanges the code locally without logging either URL.
 
 ## Design
 

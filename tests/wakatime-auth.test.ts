@@ -3,13 +3,28 @@ import { test } from "node:test";
 import {
   createWakaTimeAuthorizationRequest,
   exchangeWakaTimeAuthorizationCode,
+  getWakaTimeRefreshSecretCommand,
   parseWakaTimeOAuthCallback,
 } from "../scripts/wakatime-auth.ts";
 
 const redirectUri = "https://wakatime.com/oauth/test";
 
+test("refresh-token setup command targets the selected Worker environment", () => {
+  assert.equal(
+    getWakaTimeRefreshSecretCommand("preview"),
+    "npx wrangler secret put WAKATIME_REFRESH_TOKEN --config worker/wrangler.jsonc --env preview",
+  );
+  assert.equal(
+    getWakaTimeRefreshSecretCommand("production"),
+    "npx wrangler secret put WAKATIME_REFRESH_TOKEN --config worker/wrangler.jsonc --env production",
+  );
+});
+
 test("authorization request asks only for summary and heartbeat reads", () => {
-  const { url, state } = createWakaTimeAuthorizationRequest("client-id", redirectUri);
+  const { url, state } = createWakaTimeAuthorizationRequest(
+    "client-id",
+    redirectUri,
+  );
   assert.equal(url.origin, "https://wakatime.com");
   assert.equal(url.pathname, "/oauth/authorize");
   assert.equal(url.searchParams.get("client_id"), "client-id");
@@ -36,8 +51,8 @@ test("callback parsing validates exact redirect and state and returns its code",
     `${redirectUri}?error=access_denied&state=expected`,
     `${redirectUri}?state=expected`,
   ])
-    assert.throws(
-      () => parseWakaTimeOAuthCallback(callback, redirectUri, "expected"),
+    assert.throws(() =>
+      parseWakaTimeOAuthCallback(callback, redirectUri, "expected"),
     );
 });
 
@@ -80,10 +95,11 @@ test("authorization-code exchange rejects malformed responses without exposing s
         redirectUri,
         code: "one-time-code",
       },
-      async () => Response.json({
-        access_token: "private-access-token",
-        error_description: "private-client-secret private-refresh-token",
-      }),
+      async () =>
+        Response.json({
+          access_token: "private-access-token",
+          error_description: "private-client-secret private-refresh-token",
+        }),
     ),
     (error: unknown) =>
       error instanceof Error &&

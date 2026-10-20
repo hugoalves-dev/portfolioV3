@@ -6,11 +6,11 @@ import {
   safeText,
   timestamp,
 } from "../provider-http.ts";
+import type { Env, ProviderDependencies, ProviderResult } from "../types.ts";
 import {
   getWakaTimeAccessToken,
   WakaTimeTokenError,
 } from "../wakatime-oauth.ts";
-import type { Env, ProviderDependencies, ProviderResult } from "../types.ts";
 
 export async function getCoding(
   env: Env,
@@ -168,11 +168,13 @@ export async function getCoding(
     console.error("provider_error", {
       provider: "wakatime",
       status:
-        error instanceof ProviderHttpError || error instanceof WakaTimeTokenError
+        error instanceof ProviderHttpError ||
+        error instanceof WakaTimeTokenError
           ? error.status
           : undefined,
       error:
-        error instanceof ProviderHttpError || error instanceof WakaTimeTokenError
+        error instanceof ProviderHttpError ||
+        error instanceof WakaTimeTokenError
           ? "Provider request failed"
           : error instanceof Error
             ? error.message

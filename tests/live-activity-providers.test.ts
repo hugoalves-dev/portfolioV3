@@ -146,7 +146,10 @@ test("WakaTime uses OAuth bearer tokens and explicit summary dates", async () =>
       return { data: [] };
     }),
   );
-  assert.deepEqual(authorizations, ["Bearer wakatime-access", "Bearer wakatime-access"]);
+  assert.deepEqual(authorizations, [
+    "Bearer wakatime-access",
+    "Bearer wakatime-access",
+  ]);
   assert.equal(summaryUrl?.searchParams.get("start"), "2026-10-07");
   assert.equal(summaryUrl?.searchParams.get("end"), "2026-10-07");
   assert.equal(summaryUrl?.searchParams.has("range"), false);
@@ -176,9 +179,13 @@ test("WakaTime refreshes once and retries an unauthorized API read", async () =>
     env,
     deps((url, init) => {
       if (url.pathname.endsWith("heartbeats")) {
-        const authorization = new Headers(init?.headers).get("Authorization") ?? "";
+        const authorization =
+          new Headers(init?.headers).get("Authorization") ?? "";
         heartbeatAuthorizations.push(authorization);
-        if (unauthorizedHeartbeat && authorization === "Bearer expired-access") {
+        if (
+          unauthorizedHeartbeat &&
+          authorization === "Bearer expired-access"
+        ) {
           unauthorizedHeartbeat = false;
           return new Response("unauthorized", { status: 401 });
         }
@@ -188,7 +195,10 @@ test("WakaTime refreshes once and retries an unauthorized API read", async () =>
     }),
   );
   assert.equal(result.state, "available");
-  assert.deepEqual(heartbeatAuthorizations, ["Bearer expired-access", "Bearer refreshed-access"]);
+  assert.deepEqual(heartbeatAuthorizations, [
+    "Bearer expired-access",
+    "Bearer refreshed-access",
+  ]);
   assert.equal(requestedForce.filter(Boolean).length, 1);
 });
 
@@ -222,7 +232,10 @@ test("WakaTime does not retry a rejected refreshed bearer token more than once",
     }),
   );
   assert.equal(result.state, "unavailable");
-  assert.deepEqual(heartbeatAuthorizations, ["Bearer expired-access", "Bearer refreshed-access"]);
+  assert.deepEqual(heartbeatAuthorizations, [
+    "Bearer expired-access",
+    "Bearer refreshed-access",
+  ]);
   assert.ok(!JSON.stringify(result).includes("private-token sentinel"));
 });
 const track = {
@@ -637,10 +650,7 @@ test("coding remains active across UTC and account-local midnight", async () => 
           }
         : { data: [{ grand_total: { total_seconds: 60 } }] },
     );
-    const result = await getCoding(
-      wakaEnv(),
-      { ...d, now: () => clock },
-    );
+    const result = await getCoding(wakaEnv(), { ...d, now: () => clock });
     assert.equal(result.data?.status, "active", `${timezone} at ${time}`);
     assert.equal(
       result.data?.observedAt,

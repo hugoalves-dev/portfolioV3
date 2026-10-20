@@ -215,7 +215,10 @@ export class WakaTimeTokenStore {
       const accessToken = await refreshWakaTimeAccessToken(
         this.env,
         this.state.storage,
-        { fetch: (input, init) => globalThis.fetch(input, init), now: Date.now },
+        {
+          fetch: (input, init) => globalThis.fetch(input, init),
+          now: Date.now,
+        },
         { force },
       );
       return Response.json(

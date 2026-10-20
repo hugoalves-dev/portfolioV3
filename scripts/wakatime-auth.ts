@@ -12,6 +12,12 @@ export interface WakaTimeAuthorizationRequest {
   state: string;
 }
 
+export function getWakaTimeRefreshSecretCommand(
+  environment: "preview" | "production",
+): string {
+  return `npx wrangler secret put WAKATIME_REFRESH_TOKEN --config worker/wrangler.jsonc --env ${environment}`;
+}
+
 export function createWakaTimeAuthorizationRequest(
   clientId: string,
   redirectUri: string,
@@ -120,10 +126,13 @@ async function run(): Promise<void> {
   const clientId = process.env.WAKATIME_CLIENT_ID;
   const clientSecret = process.env.WAKATIME_CLIENT_SECRET;
   const redirectUri = process.env.WAKATIME_REDIRECT_URI;
-  if (!clientId || !clientSecret || !redirectUri)
+  const environment = process.env.WAKATIME_ENV;
+  if (!clientId || !clientSecret || !redirectUri || !environment)
     throw new Error(
-      "Set WAKATIME_CLIENT_ID, WAKATIME_CLIENT_SECRET, and WAKATIME_REDIRECT_URI in your local environment",
+      "Set WAKATIME_CLIENT_ID, WAKATIME_CLIENT_SECRET, WAKATIME_REDIRECT_URI, and WAKATIME_ENV in your local environment",
     );
+  if (environment !== "preview" && environment !== "production")
+    throw new Error("WAKATIME_ENV must be preview or production");
   const auth = createWakaTimeAuthorizationRequest(clientId, redirectUri);
   console.log("Open this authorization URL in your browser:\n");
   console.log(auth.url.href);
@@ -149,7 +158,7 @@ async function run(): Promise<void> {
     code,
   });
   console.log("\nSet this Worker secret in the selected environment:");
-  console.log("npx wrangler secret put WAKATIME_REFRESH_TOKEN");
+  console.log(getWakaTimeRefreshSecretCommand(environment));
   console.log(tokens.refreshToken);
   console.log(
     "\nKeep the refresh token private. It will be rotated and persisted by the Worker.",

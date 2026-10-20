@@ -1,12 +1,15 @@
 import { simklApiRequest } from "./simkl-http.ts";
 import { getSimklAccessToken, SimklTokenError } from "./simkl-oauth.ts";
 import { refreshSpotifyToken, SpotifyTokenError } from "./spotify-token.ts";
-import { getWakaTimeAccessToken, WakaTimeTokenError } from "./wakatime-oauth.ts";
 import type {
   CredentialProbeResult,
   Env,
   ProviderDependencies,
 } from "./types.ts";
+import {
+  getWakaTimeAccessToken,
+  WakaTimeTokenError,
+} from "./wakatime-oauth.ts";
 
 async function probeJson(
   url: URL,
@@ -57,7 +60,9 @@ async function probeWakaTime(
         if (!payload || typeof payload !== "object" || Array.isArray(payload))
           return false;
         const data = (payload as Record<string, unknown>).data;
-        return Boolean(data && typeof data === "object" && !Array.isArray(data));
+        return Boolean(
+          data && typeof data === "object" && !Array.isArray(data),
+        );
       },
     );
   } catch (error) {
