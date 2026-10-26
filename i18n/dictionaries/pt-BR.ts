@@ -237,7 +237,7 @@ const ptBR = {
   "contact.linkedin": "Conversar no LinkedIn",
   "contact.github": "Explorar o GitHub",
   "footer.signature": "VITOR HUGO · JAVA / C# · FEITO COM CURIOSIDADE",
-  "footer.hub": "HUB / DOCUMENTOS",
+  "footer.status": "STATUS DOS SERVIÇOS",
   "footer.backToTop": "VOLTAR AO TOPO",
 } as const;
 
