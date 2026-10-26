@@ -233,7 +233,7 @@ const en = {
   "contact.linkedin": "Connect on LinkedIn",
   "contact.github": "Explore GitHub",
   "footer.signature": "VITOR HUGO · JAVA / C# · BUILT WITH CURIOSITY",
-  "footer.hub": "HUB / DOCUMENTS",
+  "footer.status": "SERVICE STATUS",
   "footer.backToTop": "BACK TO TOP",
 } satisfies Record<keyof typeof ptBR, string>;
 
