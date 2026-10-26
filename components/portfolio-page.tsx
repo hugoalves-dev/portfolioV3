@@ -768,7 +768,9 @@ export function PortfolioPage({ locale }: { locale: Locale }) {
           H<span>.</span>
         </a>
         <span>{t("footer.signature")}</span>
-        <Link href="/hub">{t("footer.hub")} ↗</Link>
+        <External className="footer-status" href="https://status.hugojava.dev/">
+          {t("footer.status")} ↗
+        </External>
         <a href="#inicio">{t("footer.backToTop")} ↑</a>
       </footer>
     </ScrollExperience>
