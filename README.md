@@ -167,7 +167,7 @@ The Android section uses one desktop-only sticky mockup alongside progressively 
 
 ## Public documents
 
-The Hub is integrated into the portfolio navigation and footer. Resource cards are configured in `components/hub-resources.ts`. Shared `ResourceShell`, `DocumentLayout` and `DocumentSection` components keep future documents consistent with the portfolio. Add a resource record and an App Router page to publish another document.
+The Hub is integrated into the portfolio navigation. Resource cards are configured in `components/hub-resources.ts`. Shared `ResourceShell`, `DocumentLayout` and `DocumentSection` components keep future documents consistent with the portfolio. Add a resource record and an App Router page to publish another document.
 
 Both policies preserve their complete original text from [PortfolioV2](https://github.com/vitorhugo-dotnet/portfolioV2), including the original update dates (SonicRelay: August 18, 2026; The Universe Decides: July 16, 2026). Their English content has an explicit language attribute, semantic sections and route-specific metadata. Changing presentation must not shorten or update legal content inadvertently.
 
