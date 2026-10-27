@@ -106,9 +106,7 @@ test("GitHub links use the username resolved from the public users API", async (
     return Response.json({ login: "renamed-account" });
   });
   assert.equal(username, "renamed-account");
-  assert.deepEqual(requested, [
-    "https://api.github.com/users/hugoalves-dev",
-  ]);
+  assert.deepEqual(requested, ["https://api.github.com/users/hugoalves-dev"]);
   assert.equal(
     githubProfileUrl(username),
     "https://github.com/renamed-account",
