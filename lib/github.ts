@@ -1,4 +1,4 @@
-export const githubUsernameLookup = "vitorhugo-dotnet";
+export const githubUsernameLookup = "hugoalves-dev";
 
 function checkedGitHubUsername(value: unknown): string | undefined {
   return typeof value === "string" && /^[a-z\d-]{1,39}$/i.test(value)
