@@ -54,7 +54,7 @@ test("fetches every page and rejects incomplete catalogs rather than replacing t
   );
   try {
     await assert.rejects(fetchRepositoryCatalog(), /GitHub HTTP 503/);
-    assert.match(requested[0] ?? "", /\/users\/vitorhugo-dotnet$/);
+    assert.match(requested[0] ?? "", /\/users\/hugoalves-dev$/);
     assert.match(requested[1] ?? "", /\/users\/canonical-user\/repos\?/);
     assert.match(requested[2] ?? "", /page=2$/);
   } finally {
@@ -107,7 +107,7 @@ test("GitHub links use the username resolved from the public users API", async (
   });
   assert.equal(username, "renamed-account");
   assert.deepEqual(requested, [
-    "https://api.github.com/users/vitorhugo-dotnet",
+    "https://api.github.com/users/hugoalves-dev",
   ]);
   assert.equal(
     githubProfileUrl(username),
