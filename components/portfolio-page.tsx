@@ -699,7 +699,7 @@ export function PortfolioPage({ locale }: { locale: Locale }) {
                       : "↗"}
                 </span>
                 <div>
-                  <b>{e.repo.name.replace("vitorhugo-dotnet/", "")}</b>
+                  <b>{e.repo.name.replace("hugoalves-dev/", "")}</b>
                   <p>{describeGitHubEvent(locale, e)}</p>
                 </div>
                 <time dateTime={e.created_at}>
