@@ -34,7 +34,7 @@ function safeGoodreadsUrl(value: unknown): string | undefined {
     if (
       url.protocol !== "https:" ||
       !["goodreads.com", "www.goodreads.com"].includes(url.hostname) ||
-      !url.pathname.startsWith("/book/show/")
+      !/^\/(book|review)\/show\//.test(url.pathname)
     )
       return undefined;
     return url.href;
