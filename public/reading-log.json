@@ -1,6 +1,86 @@
 {
-  "generatedAt": "2026-10-07T00:00:00.000Z",
-  "currentlyReading": [],
-  "recentlyFinished": [],
-  "toRead": []
+  "generatedAt": "2026-11-17T13:41:46.667Z",
+  "currentlyReading": [
+    {
+      "id": "https://www.goodreads.com/review/show/9008481341",
+      "title": "Coleção Saberes - 100 minutos para entender Nietzsche",
+      "author": "Astral Cultural",
+      "url": "https://www.goodreads.com/review/show/9008481341",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1666185631l/63039338.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/9008477871",
+      "title": "Coroa da Meia-Noite",
+      "author": "Sarah J. Maas",
+      "url": "https://www.goodreads.com/review/show/9008477871",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1406666578l/22840226.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/9008469057",
+      "title": "O Crepúsculo dos Ídolos",
+      "author": "Friedrich Nietzsche",
+      "url": "https://www.goodreads.com/review/show/9008469057",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1698725984l/201105916.jpg"
+    }
+  ],
+  "recentlyFinished": [
+    {
+      "id": "https://www.goodreads.com/review/show/9009930357",
+      "title": "[Oshi No Ko], Vol. 1",
+      "author": "Aka Akasaka",
+      "url": "https://www.goodreads.com/review/show/9009930357",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1692311429l/61991445.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/7567613173",
+      "title": "Throne of Glass",
+      "author": "Sarah J. Maas",
+      "url": "https://www.goodreads.com/review/show/7567613173",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1673566495l/76703559.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/5478298161",
+      "title": "A Gente Mira no Amor e Acerta na Solidão",
+      "author": "Ana Suy",
+      "url": "https://www.goodreads.com/review/show/5478298161",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1651662736l/61031083.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/5509359528",
+      "title": "No Game No Life - Practical War Game",
+      "author": "Yuu Kamiya",
+      "url": "https://www.goodreads.com/review/show/5509359528",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1587100050l/53192810.jpg"
+    }
+  ],
+  "toRead": [
+    {
+      "id": "https://www.goodreads.com/review/show/5902320013",
+      "title": "Oito Contos de Amor",
+      "author": "Lygia Fagundes Telles",
+      "url": "https://www.goodreads.com/review/show/5902320013",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1341016608l/15728841.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/5509355657",
+      "title": "No Game No Life, livro 10",
+      "author": "Yuu Kamiya",
+      "url": "https://www.goodreads.com/review/show/5509355657",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1577041881l/49697663.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/5478451675",
+      "title": "Blood of Elves",
+      "author": "Andrzej Sapkowski",
+      "url": "https://www.goodreads.com/review/show/5478451675",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1589998653l/6043781.jpg"
+    },
+    {
+      "id": "https://www.goodreads.com/review/show/5478348868",
+      "title": "Re:ZERO -Starting Life in Another World-, Vol. 1",
+      "author": "Tappei Nagatsuki",
+      "url": "https://www.goodreads.com/review/show/5478348868",
+      "coverUrl": "https://i.gr-assets.com/images/S/compressed.photo.goodreads.com/books/1498758856l/28603205.jpg"
+    }
+  ]
 }
