@@ -183,7 +183,8 @@ const en = {
   "live.empty":
     "I might be asleep, on the road, or the server just signed off 💀",
   "live.footnote":
-    "Only activity happening now. Updates every minute while this section is visible.",
+    "Shows what's happening right now; when nothing is active, the latest activity instead. Updates every minute while this section is visible.",
+  "live.recent.title": "Latest activity",
   "live.standby.label": "STANDBY",
   "live.standby.title": "No activity detected right now.",
   "live.standby.description": "Probably offline for a few minutes.",

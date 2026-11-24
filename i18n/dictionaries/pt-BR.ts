@@ -185,7 +185,8 @@ const ptBR = {
   "live.empty":
     "Devo estar dormindo, no ônibus/dirigindo ou apenas o servidor saiu 💀",
   "live.footnote":
-    "Apenas atividades acontecendo agora. Atualização a cada minuto enquanto esta seção está visível.",
+    "Mostra o que está acontecendo agora; sem nada ativo, exibe as últimas atividades. Atualização a cada minuto enquanto esta seção está visível.",
+  "live.recent.title": "Últimas atividades",
   "live.standby.label": "EM ESPERA",
   "live.standby.title": "Nenhuma atividade detectada agora.",
   "live.standby.description":

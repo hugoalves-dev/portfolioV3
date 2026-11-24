@@ -16,10 +16,11 @@ import {
   isActivityStale,
 } from "../lib/activity-refresh.ts";
 import {
+  isProviderActive,
   type LiveActivityResponse,
   type Provider,
   parseLiveActivity,
-  providers,
+  selectActivityCards,
 } from "../lib/live-activity.ts";
 import { Reveal } from "./scroll-motion";
 
@@ -43,6 +44,7 @@ function details(
   now: number,
   locale: Locale,
 ) {
+  const active = isProviderActive(provider, data, now, stale);
   if (provider === "coding" && data.coding)
     return {
       title:
@@ -66,22 +68,18 @@ function details(
       ]
         .filter(Boolean)
         .join(" · "),
-      status:
-        data.coding.observedAt &&
-        now >= Date.parse(data.coding.observedAt) &&
-        now - Date.parse(data.coding.observedAt) < 15 * 60000
-          ? translate(locale, "live.coding.now")
-          : translate(locale, "live.coding.recent"),
+      status: active
+        ? translate(locale, "live.coding.now")
+        : translate(locale, "live.coding.recent"),
       observedAt: data.coding.observedAt,
     };
   if (provider === "spotify" && data.spotify)
     return {
       title: data.spotify.track ?? translate(locale, "live.spotify.fallback"),
       subtitle: data.spotify.artist,
-      status:
-        data.spotify.isPlaying && !stale
-          ? translate(locale, "live.spotify.now")
-          : translate(locale, "live.spotify.recent"),
+      status: active
+        ? translate(locale, "live.spotify.now")
+        : translate(locale, "live.spotify.recent"),
       image: data.spotify.artworkUrl,
       url: data.spotify.externalUrl,
       observedAt: data.spotify.observedAt,
@@ -103,12 +101,9 @@ function details(
       ]
         .filter(Boolean)
         .join(" · "),
-      status:
-        data.simkl.isActive &&
-        data.simkl.observedAt &&
-        now - Date.parse(data.simkl.observedAt) < 40 * 60000
-          ? translate(locale, "live.simkl.now")
-          : translate(locale, "live.simkl.recent"),
+      status: active
+        ? translate(locale, "live.simkl.now")
+        : translate(locale, "live.simkl.recent"),
       image: data.simkl.posterUrl,
       url: data.simkl.externalUrl,
       observedAt: data.simkl.observedAt,
@@ -117,7 +112,7 @@ function details(
     return {
       title: data.steam.game ?? translate(locale, "live.steam.fallback"),
       subtitle: [
-        data.steam.isPlaying && !stale
+        active
           ? translate(locale, "live.steam.pause")
           : translate(locale, "live.steam.recentDescription"),
         data.steam.totalPlaytimeMinutes !== undefined
@@ -131,10 +126,9 @@ function details(
       ]
         .filter(Boolean)
         .join(" · "),
-      status:
-        data.steam.isPlaying && !stale
-          ? translate(locale, "live.steam.now")
-          : translate(locale, "live.steam.recent"),
+      status: active
+        ? translate(locale, "live.steam.now")
+        : translate(locale, "live.steam.recent"),
       image: data.steam.imageUrl,
       cover: data.steam.coverUrl,
       url: data.steam.externalUrl,
@@ -324,29 +318,69 @@ export function LiveActivitySection({ locale }: { locale: Locale }) {
     };
   }, [endpoint]);
   const stale = data ? isActivityStale(data.generatedAt, clock) : false;
-  const activeCards = data
-    ? providers.flatMap((provider) => {
-        const isActive =
-          (provider === "coding" &&
-            data.coding?.observedAt &&
-            clock >= Date.parse(data.coding.observedAt) &&
-            clock - Date.parse(data.coding.observedAt) < 15 * 60000) ||
-          (provider === "spotify" && data.spotify?.isPlaying) ||
-          (provider === "simkl" &&
-            data.simkl?.isActive &&
-            data.simkl.observedAt &&
-            clock >= Date.parse(data.simkl.observedAt) &&
-            clock - Date.parse(data.simkl.observedAt) < 40 * 60000) ||
-          (provider === "steam" && data.steam?.isPlaying);
-        const requiresFreshData =
-          provider === "spotify" || provider === "steam";
-        const info =
-          isActive && (!requiresFreshData || !stale)
-            ? details(provider, data, stale, clock, locale)
-            : null;
+  const selection = data
+    ? selectActivityCards(data, clock, stale)
+    : { mode: "none" as const, providers: [] };
+  const cards = data
+    ? selection.providers.flatMap((provider) => {
+        const info = details(provider, data, stale, clock, locale);
         return info ? [{ provider, info }] : [];
       })
     : [];
+  const cardList = (
+    <div className="live-cards">
+      {cards.map(({ provider, info }, index) => (
+        <Reveal
+          key={provider}
+          delay={index * 0.06}
+          className="live-card-reveal"
+        >
+          <article
+            className={`live-card live-${provider}${
+              selection.mode === "recent" ? " is-recent" : ""
+            }`}
+          >
+            <div className="live-card-heading">
+              <span aria-hidden="true" className="live-symbol">
+                {labels[provider].symbol}
+              </span>
+              <span className="tag">{t(labels[provider].category)}</span>
+              <span className="live-provider">{labels[provider].title}</span>
+            </div>
+            <p className="live-status">{info.status}</p>
+            <div className="live-card-content">
+              {info.image && (
+                <Image
+                  src={info.image}
+                  alt=""
+                  width={64}
+                  height={64}
+                  loading="lazy"
+                  referrerPolicy="no-referrer"
+                />
+              )}
+              <div>
+                <h3>{info.title}</h3>
+                {info.subtitle && <p>{info.subtitle}</p>}
+              </div>
+            </div>
+            {info.observedAt && (
+              <time className="live-observed" dateTime={info.observedAt}>
+                {t("live.observedAt", {
+                  date: displayTime(locale, info.observedAt),
+                })}
+              </time>
+            )}
+            {info.url && (
+              <a href={info.url} target="_blank" rel="noopener noreferrer">
+                {t("live.openProvider", { provider: labels[provider].title })} ↗
+              </a>
+            )}
+          </article>
+        </Reveal>
+      ))}
+    </div>
+  );
   return (
     <section ref={section} id="agora" className="chapter live-activity">
       <div className="section-label">
@@ -382,68 +416,18 @@ export function LiveActivitySection({ locale }: { locale: Locale }) {
           {error && data && <small>{t("live.error.previousData")}</small>}
         </p>
       </div>
-      {activeCards.length ? (
-        <div className="live-cards">
-          {activeCards.map(({ provider, info }, index) => {
-            return (
-              <Reveal
-                key={provider}
-                delay={index * 0.06}
-                className="live-card-reveal"
-              >
-                <article className={`live-card live-${provider}`}>
-                  <div className="live-card-heading">
-                    <span aria-hidden="true" className="live-symbol">
-                      {labels[provider].symbol}
-                    </span>
-                    <span className="tag">{t(labels[provider].category)}</span>
-                    <span className="live-provider">
-                      {labels[provider].title}
-                    </span>
-                  </div>
-                  <p className="live-status">{info.status}</p>
-                  <div className="live-card-content">
-                    {info.image && (
-                      <Image
-                        src={info.image}
-                        alt=""
-                        width={64}
-                        height={64}
-                        loading="lazy"
-                        referrerPolicy="no-referrer"
-                      />
-                    )}
-                    <div>
-                      <h3>{info.title}</h3>
-                      {info.subtitle && <p>{info.subtitle}</p>}
-                    </div>
-                  </div>
-                  {info.observedAt && (
-                    <time className="live-observed" dateTime={info.observedAt}>
-                      {t("live.observedAt", {
-                        date: displayTime(locale, info.observedAt),
-                      })}
-                    </time>
-                  )}
-                  {info.url && (
-                    <a
-                      href={info.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                    >
-                      {t("live.openProvider", {
-                        provider: labels[provider].title,
-                      })}{" "}
-                      ↗
-                    </a>
-                  )}
-                </article>
-              </Reveal>
-            );
-          })}
-        </div>
+      {data && cards.length && selection.mode === "active" ? (
+        cardList
       ) : data ? (
-        <StandbyPanel data={data} now={clock} locale={locale} />
+        <>
+          <StandbyPanel data={data} now={clock} locale={locale} />
+          {cards.length > 0 && (
+            <div className="live-recent">
+              <h3 className="live-recent-title">{t("live.recent.title")}</h3>
+              {cardList}
+            </div>
+          )}
+        </>
       ) : error || !endpoint ? (
         <p className="live-fallback">{t("live.empty")}</p>
       ) : null}

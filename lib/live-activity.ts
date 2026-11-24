@@ -116,3 +116,68 @@ export function parseLiveActivity(value: unknown): LiveActivityResponse | null {
   }
   return value as LiveActivityResponse;
 }
+
+export const CODING_ACTIVE_MS = 15 * 60000;
+export const SIMKL_ACTIVE_MS = 40 * 60000;
+
+function withinWindow(observedAt: string | undefined, now: number, ms: number) {
+  if (!observedAt) return false;
+  const time = Date.parse(observedAt);
+  return now >= time && now - time < ms;
+}
+
+export function isProviderActive(
+  provider: Provider,
+  data: LiveActivityResponse,
+  now: number,
+  stale: boolean,
+): boolean {
+  switch (provider) {
+    case "coding":
+      return withinWindow(data.coding?.observedAt, now, CODING_ACTIVE_MS);
+    case "spotify":
+      return Boolean(data.spotify?.isPlaying) && !stale;
+    case "simkl":
+      return (
+        Boolean(data.simkl?.isActive) &&
+        withinWindow(data.simkl?.observedAt, now, SIMKL_ACTIVE_MS)
+      );
+    case "steam":
+      return Boolean(data.steam?.isPlaying) && !stale;
+  }
+}
+
+function hasRecentActivity(provider: Provider, data: LiveActivityResponse) {
+  if (data.providerStates[provider] !== "available") return false;
+  if (provider === "coding") return Boolean(data.coding?.observedAt);
+  return Boolean(data[provider]);
+}
+
+export type ActivitySelection =
+  | { mode: "active"; providers: Provider[] }
+  | { mode: "recent"; providers: Provider[] }
+  | { mode: "none"; providers: [] };
+
+export function selectActivityCards(
+  data: LiveActivityResponse,
+  now: number,
+  stale: boolean,
+): ActivitySelection {
+  const active = providers.filter((provider) =>
+    isProviderActive(provider, data, now, stale),
+  );
+  if (active.length) return { mode: "active", providers: active };
+  const observed = (provider: Provider) => {
+    const value = data[provider]?.observedAt;
+    const time = value ? Date.parse(value) : Number.NaN;
+    return Number.isFinite(time) ? time : Number.NEGATIVE_INFINITY;
+  };
+  const recent = providers
+    .filter((provider) => hasRecentActivity(provider, data))
+    .sort((a, b) =>
+      observed(a) === observed(b) ? 0 : observed(b) - observed(a),
+    );
+  return recent.length
+    ? { mode: "recent", providers: recent }
+    : { mode: "none", providers: [] };
+}

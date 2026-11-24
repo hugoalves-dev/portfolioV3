@@ -1622,6 +1622,23 @@ fieldset.activity-tabs {
   font-size: 0.7rem;
   padding-top: 0.8rem;
 }
+.live-recent {
+  margin-top: 1.5rem;
+}
+.live-recent-title {
+  color: var(--muted);
+  font-size: 0.75rem;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  margin-bottom: 1rem;
+}
+.live-card.is-recent {
+  min-height: 200px;
+}
+.live-card.is-recent .live-status,
+.live-card.is-recent .live-symbol {
+  color: var(--muted);
+}
 .live-fallback {
   color: var(--muted);
   font-size: 0.9rem;

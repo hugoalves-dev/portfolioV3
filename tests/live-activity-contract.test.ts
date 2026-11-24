@@ -1,6 +1,9 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseLiveActivity } from "../lib/live-activity.ts";
+import {
+  parseLiveActivity,
+  selectActivityCards,
+} from "../lib/live-activity.ts";
 import {
   fetchProviderJson,
   safeHttpsUrl,
@@ -88,4 +91,77 @@ test("provider transport aborts a slow request", async (t) => {
   const rejected = assert.rejects(request);
   t.mock.timers.tick(5000);
   await rejected;
+});
+
+const base = {
+  generatedAt: "2026-10-07T12:00:00Z",
+  providerStates: {
+    coding: "available",
+    spotify: "available",
+    simkl: "available",
+    steam: "available",
+  },
+} as const;
+const noon = Date.parse("2026-10-07T12:00:00Z");
+
+test("active activity takes precedence over recent history", () => {
+  const selection = selectActivityCards(
+    {
+      ...base,
+      spotify: { isPlaying: true, track: "Song" },
+      steam: { isPlaying: false, game: "Game" },
+    },
+    noon,
+    false,
+  );
+  assert.deepEqual(selection, { mode: "active", providers: ["spotify"] });
+});
+
+test("idle section falls back to recent activity, newest first", () => {
+  const selection = selectActivityCards(
+    {
+      ...base,
+      coding: { status: "idle", observedAt: "2026-10-07T10:00:00Z" },
+      spotify: {
+        isPlaying: false,
+        track: "Song",
+        observedAt: "2026-10-07T11:30:00Z",
+      },
+      simkl: {
+        mediaType: "anime",
+        title: "Anime",
+        isActive: false,
+        observedAt: "2026-10-06T22:00:00Z",
+      },
+      steam: { isPlaying: false, game: "Game" },
+    },
+    noon,
+    false,
+  );
+  assert.deepEqual(selection, {
+    mode: "recent",
+    providers: ["spotify", "coding", "simkl", "steam"],
+  });
+});
+
+test("stale playing state is shown as recent, not live", () => {
+  const selection = selectActivityCards(
+    { ...base, steam: { isPlaying: true, game: "Game" } },
+    noon,
+    true,
+  );
+  assert.deepEqual(selection, { mode: "recent", providers: ["steam"] });
+});
+
+test("coding without a heartbeat and unavailable providers are skipped", () => {
+  const selection = selectActivityCards(
+    {
+      ...base,
+      providerStates: { ...base.providerStates, spotify: "unavailable" },
+      coding: { status: "idle", durationMinutes: 0 },
+    },
+    noon,
+    false,
+  );
+  assert.deepEqual(selection, { mode: "none", providers: [] });
 });
