@@ -1625,12 +1625,19 @@ fieldset.activity-tabs {
 .live-recent {
   margin-top: 1.5rem;
 }
+.live-recent-heading {
+  margin-bottom: 1rem;
+}
 .live-recent-title {
   color: var(--muted);
   font-size: 0.75rem;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  margin-bottom: 1rem;
+}
+.live-recent-quip {
+  color: var(--ink);
+  font-size: 0.95rem;
+  margin-top: 0.4rem;
 }
 .live-card.is-recent {
   min-height: 200px;

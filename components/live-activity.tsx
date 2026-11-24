@@ -114,7 +114,9 @@ function details(
       subtitle: [
         active
           ? translate(locale, "live.steam.pause")
-          : translate(locale, "live.steam.recentDescription"),
+          : data.steam.observedAt
+            ? translate(locale, "live.steam.lastSession")
+            : translate(locale, "live.steam.recentDescription"),
         data.steam.totalPlaytimeMinutes !== undefined
           ? translate(locale, "live.steam.playtime", {
               hours: new Intl.NumberFormat(
@@ -423,7 +425,10 @@ export function LiveActivitySection({ locale }: { locale: Locale }) {
           <StandbyPanel data={data} now={clock} locale={locale} />
           {cards.length > 0 && (
             <div className="live-recent">
-              <h3 className="live-recent-title">{t("live.recent.title")}</h3>
+              <div className="live-recent-heading">
+                <h3 className="live-recent-title">{t("live.recent.title")}</h3>
+                <p className="live-recent-quip">{t("live.recent.quip")}</p>
+              </div>
               {cardList}
             </div>
           )}

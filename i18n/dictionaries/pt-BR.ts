@@ -187,6 +187,9 @@ const ptBR = {
   "live.footnote":
     "Mostra o que está acontecendo agora; sem nada ativo, exibe as últimas atividades. Atualização a cada minuto enquanto esta seção está visível.",
   "live.recent.title": "Últimas atividades",
+  "live.recent.quip":
+    "Nada rolando agora. Enquanto isso, o replay dos melhores momentos 🎬",
+  "live.steam.lastSession": "Última partida registrada.",
   "live.standby.label": "EM ESPERA",
   "live.standby.title": "Nenhuma atividade detectada agora.",
   "live.standby.description":

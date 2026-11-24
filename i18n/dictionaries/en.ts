@@ -185,6 +185,9 @@ const en = {
   "live.footnote":
     "Shows what's happening right now; when nothing is active, the latest activity instead. Updates every minute while this section is visible.",
   "live.recent.title": "Latest activity",
+  "live.recent.quip":
+    "Nothing happening right now. Meanwhile, here's the replay 🎬",
+  "live.steam.lastSession": "Last recorded session.",
   "live.standby.label": "STANDBY",
   "live.standby.title": "No activity detected right now.",
   "live.standby.description": "Probably offline for a few minutes.",
